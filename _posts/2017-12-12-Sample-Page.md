@@ -5,6 +5,11 @@ published: false
 
 Hi this is sample page for testing/
 
+To run jekyll locally
+
+
+`bundle exec jekyll serve --watch --port 8001 --livereload`
+
 Text can be **bold**, _italic_, ~~strikethrough~~ or `keyword`.
 
 [Link to another page](another-page).

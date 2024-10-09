@@ -1,5 +1,5 @@
 ---
-title: TFCCTF 2024 Writeups
+title: TFCCTF 2024 Writeup
 published: true
 ---
 
@@ -199,7 +199,7 @@ data://localhost/text/html,JiZjdXJsIDFhY2QxeHh5ZTlwZ295ajloanVocWM2OGV6a3E4dHdpL
 ![](../assets/2024/tfcctf/safe_content2.png)
 
 
-### License [Reversing | Warmup]
+### License [Reverse | Warmup]
 
 As the name suggests, the goal of this challenge is to find the license key of the binary. Unfortunately I didn't solved it during CTF, but for learning Reverse engineering I took this challenge and solved it after few days. 
 

