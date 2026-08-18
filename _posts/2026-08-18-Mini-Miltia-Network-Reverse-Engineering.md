@@ -12,7 +12,7 @@ tags: [RE, Web,Network]
 
 ### Intro
 
-Hii Everyone, I have been fiddling with mobile game hacking tools recently. Some tools include Lucky Patcher, Game guardian, [AceTheGame](https://github.com/KuhakuPixel/AceTheGame). These tools work perfectly for offline games patching memory in runtime or modifying dex code for money and health hacks. But then I wanted to tweak with some online game. Since Mini militia offers both online and LAN mode games, I selected it as it will be easier for debugging. I started like always with apk decompilation jadx. Intial analysis reveals that the app uses cocos2d as game engine as lib/arm64-v8a contains **libcocos2dcpp.so**. 
+Hii Everyone, I have been fiddling with mobile game hacking tools recently. Some tools include Lucky Patcher, Game guardian, [AceTheGame](https://github.com/KuhakuPixel/AceTheGame). These tools work perfectly for offline games patching memory in runtime or modifying dex code for money and health hacks. But then I wanted to tweak with some online game. Since [Mini militia](https://play.google.com/store/apps/details?id=com.appsomniacs.mmc&hl=en_IN) offers both online and LAN mode games, I selected it as it will be easier for debugging. I started like always with apk decompilation jadx. Intial analysis reveals that the app uses cocos2d as game engine as lib/arm64-v8a contains **libcocos2dcpp.so**. 
 
 
 ### Black Box scan
@@ -233,7 +233,7 @@ After decompiling `_ZN13ClientRoomLAN20processPlayerMessage` and `_ZN9ServerLAN2
 
 ### _ZN9ServerLAN20processPlayerMessageEPN6RakNet6
 
- Since there are lot of branch statement here, ghidra threw error **too many branches to recover a jumptable** . So I used **claude** to generate a switch statement recovery from the Jump table. The disassembly shows that it loads offset address from `DAT_0118c3c0` as 32 bit int, these address hold the offset to be added to the current function base address. So it recursively reads byte at the address and add it to the base addres to point to current location.
+Since there are lot of branch statement here, ghidra threw error **too many branches to recover a jumptable** . So I used **claude** to generate a switch statement recovery from the Jump table. The disassembly shows that it loads offset address from `DAT_0118c3c0` as 32 bit int, these address hold the offset to be added to the current function base address. So it recursively reads byte at the address and add it to the base addres to point to current location.
 
 
 ```
@@ -317,7 +317,15 @@ Now the name field can be added to ClientRoom_vftable to make the calls much cle
     }
 ```
 
-For example here switch case `0xb` which relates to opcode 0x1a since opcode param_3 is subtracted 0x7 in the code. This specific opcode handles `processPlayerDamageMessage`. which can be hooked and modified to make infinite health cheat. Since our device act as server we can make the client think that the damage is negligible. 
+Now for the most important part, what value conclude to use these switch statements. And the answer is Raknet::Packet's data field. Our code flow from `ServerState::ProcessMessage(RakNet::Packet*, ClientEntry*, bool) -> _ZN9ServerLAN20processPlayerMessageEPN6RakNet6`, 
+ServerState::ProcessMessage calls  ServerLAN::processPlayerMessage with **six arguments**. Of which the third arg is used as criterion. This argument is calculated from `local_38 = *(undefined1 *)(*(long *)(param_2 + 0x30) + 1);` where param2 is Raknet::Packet* . From [raknet's source code](https://github.com/facebookarchive/RakNet/blob/1a169895a900c9fc4841c556e16514182b75faf8/Source/RakNetTypes.h#L428), it is even clear that the offset 0x30 represents start of data field which we saw earlier in wireshark analyis. So the first byte is used as selector for typr of packet to be processed in the application. In other block it reads from offset +x32 depending upon the boolean value. Let us consider it as opcode and find out how it is used.
+
+
+For example in switch case `0xb` which relates to opcode 0x1a since opcode `param_3` is subtracted 0x7 in the code. This specific opcode handles `processPlayerDamageMessage`. which can be hooked and modified to make infinite health cheat. Since our device act as server we can make the client think that the damage is negligible. 
+
+The processPlayerDamageMessage calls a bunch of methods, but this call looks promising `_ZN10ClientRoom17addDamageToClientEP` . This function in turn calls  _ZN11ClientEntry9addDamageEfii. So I logged the arguments and created this script to modify value minimally for the server device, so it looks like we are never receiving damage in LAN wifi matches.
+
+
 
 ### Summary
 
@@ -342,3 +350,79 @@ This is the final summarized opcode and message dispatcher found from the above 
 | 0x41      | ClientRoom |          processPlayerSpawnRequest |
 | 0x46      | ClientRoom |           processWeaponStateChange |
 | 0x48      | ClientRoom |                   processRemoveGas |
+
+
+And finally this script will create hack to reduce incoming damage from other device to the host.
+
+```javascript
+const MODULE = 'libcocos2dcpp.so';
+const DMG = 0.1;
+const OFF_HEALTH = 0x250;
+
+const SYM_ADD_DAMAGE = '_ZN11ClientEntry9addDamageEfii';
+const SYM_GET_HOST   = '_ZN10ClientRoom7getHostEv';
+
+function findMod(name) {
+  if (typeof Process.findModuleByName === 'function') return Process.findModuleByName(name);
+  try { return Process.getModuleByName(name); } catch (e) { return null; }
+}
+
+function f2(p) { try { return p.readFloat(); } catch (e) { return NaN; } }
+
+const mod = Process.getModuleByName(MODULE)
+
+let myEntry = null, room = null, getHostFn = null;
+function sameEntry(a, b) { return a !== null && b !== null && a.equals(b); }
+function refreshMyEntry() {
+  if (myEntry === null && room !== null && getHostFn !== null) {
+    try { const e = getHostFn(room); if (!e.isNull()) myEntry = ptr(e.toString()); } catch (e) {}
+  }
+}
+
+function install() {
+  const mod = Process.getModuleByName(MODULE)
+  if (mod === null) return false;
+
+//   const addrGetHost = Module.getExportByName(MODULE, SYM_GET_HOST);
+  const addrGetHost = mod.getExportByName(SYM_GET_HOST);
+
+  getHostFn = new NativeFunction(addrGetHost, 'pointer', ['pointer']);
+
+  Interceptor.attach(addrGetHost, {
+    onEnter: function (args) { room = args[0]; },
+    onLeave: function (retval) {
+      if (!retval.isNull() && (myEntry === null || !myEntry.equals(retval))) {
+        myEntry = ptr(retval.toString());
+        console.log('ME', 'host player ClientEntry = ' + myEntry);
+      }
+    }
+  });
+
+
+  Interceptor.attach(mod.getExportByName(SYM_ADD_DAMAGE), {
+    onEnter: function (args) {
+        this.entry   = args[0];
+        this.damager = args[2].toInt32() & 0xffff;
+        this.before  = f2(this.entry.add(OFF_HEALTH));
+        if (myEntry === null) refreshMyEntry();
+        this.isMe = sameEntry(this.entry, myEntry);
+    },
+    onLeave: function () {
+      const after = f2(this.entry.add(OFF_HEALTH));
+      const loss  = this.before - after;
+      if (!(loss > 0.0001)) return;
+
+      if (this.isMe) {
+        const target = Math.max(this.before - DMG, 0);
+        if (after < target) {
+          this.entry.add(OFF_HEALTH).writeFloat(target);
+        }
+      }
+    }
+  });
+
+  return true;
+}
+
+const iv = setInterval(function () { if (install()) clearInterval(iv); }, 100);
+```
