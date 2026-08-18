@@ -4,7 +4,7 @@
   <id>http://localhost:4000/</id>
   <title>grep-user</title>
   <subtitle>Praveen Dhinakaran's personal blog. </subtitle>
-  <updated>2026-10-21T23:22:08+05:30</updated>
+  <updated>2026-11-11T08:26:12+05:30</updated>
   <author>
     <name>Praveen</name>
     <uri>http://localhost:4000/</uri>
@@ -44,11 +44,35 @@
 
   
   <entry>
+    <title>Mini Militia Reverse Engineering</title>
+    <link href="http://localhost:4000/posts/Mini-Miltia-Network-Reverse-Engineering/" rel="alternate" type="text/html" title="Mini Militia Reverse Engineering" />
+    <published>2026-08-18T00:00:00+05:30</published>
+  
+    <updated>2026-08-18T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/Mini-Miltia-Network-Reverse-Engineering/</id>
+    <content type="text/html" src="http://localhost:4000/posts/Mini-Miltia-Network-Reverse-Engineering/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="Reverse Engineering" />
+    
+  
+
+  <summary>This post demonstrates the reverse engineering of an app to understand its internal workings. It is intended purely for educational purposes and does not promote or encourage online hacking or any malicious activities.   Intro  Hii Everyone, I have been fiddling with mobile game hacking tools recently. Some tools include Lucky Patcher, Game guardian, AceTheGame. These tools work perfectly for o...</summary>
+
+  </entry>
+
+  
+  <entry>
     <title>Race condition in static variable [Java]</title>
     <link href="http://localhost:4000/posts/Race-condition-in-static-variable/" rel="alternate" type="text/html" title="Race condition in static variable [Java]" />
     <published>2026-07-14T00:00:00+05:30</published>
   
-    <updated>2026-07-14T00:00:00+05:30</updated>
+    <updated>2026-10-21T23:35:50+05:30</updated>
   
     <id>http://localhost:4000/posts/Race-condition-in-static-variable/</id>
     <content type="text/html" src="http://localhost:4000/posts/Race-condition-in-static-variable/" />
@@ -111,30 +135,6 @@
   
 
   <summary>Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges.  Contents    Fire in the Base Camp[Android]   Secure Vault[Android]   Is this Android[Android]   Loan Ap...</summary>
-
-  </entry>
-
-  
-  <entry>
-    <title>TFCCTF 2024 Writeup</title>
-    <link href="http://localhost:4000/posts/TFC-CTF-Writeup/" rel="alternate" type="text/html" title="TFCCTF 2024 Writeup" />
-    <published>2024-08-04T00:00:00+05:30</published>
-  
-    <updated>2024-08-04T00:00:00+05:30</updated>
-  
-    <id>http://localhost:4000/posts/TFC-CTF-Writeup/</id>
-    <content type="text/html" src="http://localhost:4000/posts/TFC-CTF-Writeup/" />
-    <author>
-      <name><author_id></name>
-    </author>
-
-  
-    
-    <category term="CTF" />
-    
-  
-
-  <summary>Hi guys, This weekend I attended TFC CTF which was fun and I learnt a lot of new things. Also I tried most of the web challenges but able to complete only one. But in this writeup I am going to discuss about other challenges and their solutions from discord. The challege I solved is Safe_Content ,a medium web challenge.  Contents    Greetings[Web]   Surfing[Web]   Funny[Web]   Safe_Content[Web]...</summary>
 
   </entry>
 
