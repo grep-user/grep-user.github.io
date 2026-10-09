@@ -4,5 +4,8 @@ icon: fas fa-info-circle
 order: 4
 ---
 
-> Add Markdown syntax content to file `_tabs/about.md`{: .filepath } and it will show up on this page.
-{: .prompt-tip }
+- OSCP-certified Security Engineer at Zoho, passionate about cybersecurity and CTFs on the weekends.
+
+- I like asking questions and answering them! Feel free to contact  [me](mailto:praveendhinakaran27@gmail.com).
+
+![Certificate](./assets/cert.png)

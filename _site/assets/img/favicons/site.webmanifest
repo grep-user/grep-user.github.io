@@ -1,21 +1,25 @@
+
+
 {
-  "name": "MyWebSite",
-  "short_name": "MySite",
+  "name": "grep-user",
+  "short_name": "grep-user",
+  "description": "Praveen Dhinakaran's personal blog. ",
   "icons": [
     {
-      "src": "/web-app-manifest-192x192.png",
+      "src": "/assets/img/favicons/web-app-manifest-192x192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
+      "type": "image/png"
     },
     {
-      "src": "/web-app-manifest-512x512.png",
+      "src": "/assets/img/favicons/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
+  "start_url": "/index.html",
+  "theme_color": "#2a1e6b",
   "background_color": "#ffffff",
   "display": "standalone"
 }
+
