@@ -1,0 +1,143 @@
+
+
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>http://localhost:4000/</id>
+  <title>grep-user</title>
+  <subtitle>Praveen Dhinakaran's personal blog. </subtitle>
+  <updated>2026-10-09T23:24:59+05:30</updated>
+  <author>
+    <name>Praveen</name>
+    <uri>http://localhost:4000/</uri>
+  </author>
+  <link rel="self" type="application/atom+xml" href="http://localhost:4000/feed.xml"/>
+  <link rel="alternate" type="text/html" hreflang="en"
+    href="http://localhost:4000/"/>
+  <generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator>
+  <rights> © 2026 Praveen </rights>
+  <icon>/assets/img/favicons/favicon.ico</icon>
+  <logo>/assets/img/favicons/favicon-96x96.png</logo>
+
+
+  
+  <entry>
+    <title>NNS Devsecoops challenges writeups</title>
+    <link href="http://localhost:4000/posts/NNS-CTF-Devsecoops-Writeup/" rel="alternate" type="text/html" title="NNS Devsecoops challenges writeups" />
+    <published>2026-09-14T00:00:00+05:30</published>
+  
+    <updated>2026-09-14T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/NNS-CTF-Devsecoops-Writeup/</id>
+    <content type="text/html" src="http://localhost:4000/posts/NNS-CTF-Devsecoops-Writeup/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="CTF" />
+    
+  
+
+  <summary>Hiding in your WiFi  Description  I'm on your network. There is a client at 10.10.10.20 that keeps fetching something from the web server at 10.10.10.10, and the server only talks to the client.  You are 10.10.10.66. You have arpspoof and tcpdump.    Analysis  The challenge creates an instance with arpspoof and tcpdump. After connecting to remote instace using ncat ncat --ssl hiding-in-your-wif...</summary>
+
+  </entry>
+
+  
+  <entry>
+    <title>TCP1P CTF 2024 Android Writeup</title>
+    <link href="http://localhost:4000/posts/TCP1P-CTF-Android-Writeup/" rel="alternate" type="text/html" title="TCP1P CTF 2024 Android Writeup" />
+    <published>2024-10-14T00:00:00+05:30</published>
+  
+    <updated>2024-10-14T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/TCP1P-CTF-Android-Writeup/</id>
+    <content type="text/html" src="http://localhost:4000/posts/TCP1P-CTF-Android-Writeup/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="CTF" />
+    
+  
+
+  <summary>Hey everyone, last weekend I participated in the much-anticipated TCP1P CTF. I had a great time with their mobile challenges last year, and this year’s challenges were just as good! This time we have 4 challenges and I was able to solve 2 challenges. This time they had poc tester which works well for the challenges. These challenges are now available in github.    Contents    Interfaces [Androi...</summary>
+
+  </entry>
+
+  
+  <entry>
+    <title>Iron CTF 2024 Writeup</title>
+    <link href="http://localhost:4000/posts/Iron-CTF-Writeup/" rel="alternate" type="text/html" title="Iron CTF 2024 Writeup" />
+    <published>2024-10-07T00:00:00+05:30</published>
+  
+    <updated>2024-10-07T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/Iron-CTF-Writeup/</id>
+    <content type="text/html" src="http://localhost:4000/posts/Iron-CTF-Writeup/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="CTF" />
+    
+  
+
+  <summary>Hi guys, after long time this weekend I played Iron ctf which is hosted by SASTRA University. Really a wonderful CTF after and I was abled to solve few challenges. I concentrated mostly on android and web challenges, and was able to solve all android challenges as well as few web challenges.  Contents    Fire in the Base Camp[Android]   Secure Vault[Android]   Is this Android[Android]   Loan Ap...</summary>
+
+  </entry>
+
+  
+  <entry>
+    <title>TFCCTF 2024 Writeup</title>
+    <link href="http://localhost:4000/posts/TFC-CTF-Writeup/" rel="alternate" type="text/html" title="TFCCTF 2024 Writeup" />
+    <published>2024-08-04T00:00:00+05:30</published>
+  
+    <updated>2024-08-04T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/TFC-CTF-Writeup/</id>
+    <content type="text/html" src="http://localhost:4000/posts/TFC-CTF-Writeup/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="CTF" />
+    
+  
+
+  <summary>Hi guys, This weekend I attended TFC CTF which was fun and I learnt a lot of new things. Also I tried most of the web challenges but able to complete only one. But in this writeup I am going to discuss about other challenges and their solutions from discord. The challege I solved is Safe_Content ,a medium web challenge.  Contents    Greetings[Web]   Surfing[Web]   Funny[Web]   Safe_Content[Web]...</summary>
+
+  </entry>
+
+  
+  <entry>
+    <title>Imaginary CTF July Month Writeup</title>
+    <link href="http://localhost:4000/posts/Imaginary-CTF-July-Month/" rel="alternate" type="text/html" title="Imaginary CTF July Month Writeup" />
+    <published>2024-06-23T00:00:00+05:30</published>
+  
+    <updated>2024-06-23T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/Imaginary-CTF-July-Month/</id>
+    <content type="text/html" src="http://localhost:4000/posts/Imaginary-CTF-July-Month/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="CTF" />
+    
+  
+
+  <summary>Imaginary CTF organizes CTF every year, along with it they also create monthly challenges for users to play, featuring a leaderboard for each month.  Whener I have some time, I use to play this challenges. So in this month they released few challenges  So this time I solved few challenges, so here are some solutions I come up with during challenge.  Functional Programming [Reversing]  This chal...</summary>
+
+  </entry>
+
+</feed>
+
+
