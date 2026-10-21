@@ -242,6 +242,8 @@ Gate: 49-A -- Start time: 1792587230538 ms -- End time: 1792587230541 ms -- Elap
 Gate: 50-B -- Start time: 1792587230538 ms -- End time: 1792587230541 ms -- Elapsed time: 3 ms
 ```
 
+The entire application is hosted at [github](https://github.com/grep-user/race-conditon-poc), do check it out.
+
 ### Conclusion
 
 What looked like insignificant finding but as I digged deeper the impact became huge. This is a decade old [problem](https://stackoverflow.com/questions/7026507/why-are-static-variables-considered-evil), but still it can be found in large and complex code bases. If time I will explore more on the modern version of this bug class researched by [James Kettle from Portswigger](https://portswigger.net/research/smashing-the-state-machine).
