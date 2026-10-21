@@ -4,7 +4,7 @@
   <id>http://localhost:4000/</id>
   <title>grep-user</title>
   <subtitle>Praveen Dhinakaran's personal blog. </subtitle>
-  <updated>2026-10-10T01:14:06+05:30</updated>
+  <updated>2026-10-21T19:21:26+05:30</updated>
   <author>
     <name>Praveen</name>
     <uri>http://localhost:4000/</uri>
@@ -39,6 +39,30 @@
   
 
   <summary>Hiding in your WiFi  Description  I'm on your network. There is a client at 10.10.10.20 that keeps fetching something from the web server at 10.10.10.10, and the server only talks to the client.  You are 10.10.10.66. You have arpspoof and tcpdump.    Analysis  The challenge creates an instance with arpspoof and tcpdump. After connecting to remote instace using ncat ncat --ssl hiding-in-your-wif...</summary>
+
+  </entry>
+
+  
+  <entry>
+    <title>Race condition in static variable [Java]</title>
+    <link href="http://localhost:4000/posts/Race-condition-in-static-variable/" rel="alternate" type="text/html" title="Race condition in static variable [Java]" />
+    <published>2026-07-14T00:00:00+05:30</published>
+  
+    <updated>2026-07-14T00:00:00+05:30</updated>
+  
+    <id>http://localhost:4000/posts/Race-condition-in-static-variable/</id>
+    <content type="text/html" src="http://localhost:4000/posts/Race-condition-in-static-variable/" />
+    <author>
+      <name><author_id></name>
+    </author>
+
+  
+    
+    <category term="Application Security" />
+    
+  
+
+  <summary>Introduction  Few weeks before, I was working on java source code analysis and found a race condition. Initially the finding felt inconsequnetial, but after a working POC I was able to prove the impact of the bug.  This posts will cover both my thoughts and approach to race condition bugs[specifically to web] and how was I able to exploit it. I am sure AI can write exploit for these bugs easily...</summary>
 
   </entry>
 
@@ -111,30 +135,6 @@
   
 
   <summary>Hi guys, This weekend I attended TFC CTF which was fun and I learnt a lot of new things. Also I tried most of the web challenges but able to complete only one. But in this writeup I am going to discuss about other challenges and their solutions from discord. The challege I solved is Safe_Content ,a medium web challenge.  Contents    Greetings[Web]   Surfing[Web]   Funny[Web]   Safe_Content[Web]...</summary>
-
-  </entry>
-
-  
-  <entry>
-    <title>Imaginary CTF July Month Writeup</title>
-    <link href="http://localhost:4000/posts/Imaginary-CTF-July-Month/" rel="alternate" type="text/html" title="Imaginary CTF July Month Writeup" />
-    <published>2024-06-23T00:00:00+05:30</published>
-  
-    <updated>2024-06-23T00:00:00+05:30</updated>
-  
-    <id>http://localhost:4000/posts/Imaginary-CTF-July-Month/</id>
-    <content type="text/html" src="http://localhost:4000/posts/Imaginary-CTF-July-Month/" />
-    <author>
-      <name><author_id></name>
-    </author>
-
-  
-    
-    <category term="CTF" />
-    
-  
-
-  <summary>Imaginary CTF organizes CTF every year, along with it they also create monthly challenges for users to play, featuring a leaderboard for each month.  Whener I have some time, I use to play this challenges. So in this month they released few challenges  So this time I solved few challenges, so here are some solutions I come up with during challenge.  Functional Programming [Reversing]  This chal...</summary>
 
   </entry>
 
