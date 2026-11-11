@@ -20,13 +20,13 @@ Hii Everyone, I have been fiddling with mobile game hacking tools recently. Some
 My intial approach is to capture the traffic and analyze the packets prior to source code analysis. The application uses [raknet](https://github.com/facebookarchive/RakNet). Since it used UDP as underlying protocol. Since this is UDP based traffic, burp suite won't work here unless used with some extension like [NoPE proxy](https://portswigger.net/bappstore/12e84399d46a408dbe970f181391f781). Mitmproxy have support for UDP traffic capture but I used wireshark to capture the traffic hoping that it doesn't encrypt packets. Wirehark has support for filtering and displaying raknet protocol traffic. Since [ref](https://www.wireshark.org/docs/dfref/r/raknet.html). Applying only `raknet` filter displays ony Raknet packets. The raknet packet identifiers filters `raknet.offline.message.id` are useful in filtering specific packets which are mentioned [here](https://github.com/facebookarchive/RakNet/blob/master/Source/MessageIdentifiers.h#L233)
 
 
-![](/assets/2026/mini/mini2.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
+![](../assets/2026/mini/mini2.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
 
 
 I created a LAN match and make my other device join the same room and generated some traffic. Sending chat messages, changing game configurations and playing a short game to generate more traffic. The game specific packets doesn't follow a stand raknet packets identifier, using filter `raknet && raknet.unknown.id`, I was able to see the chat message  **foobar** in the traffic. Similar to this other traffic is also cpatured as unknow message id. With this information let's try to understand the traffic structure and decode it.  
 
 
-![](/assets/2026/mini/mini1.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
+![](../assets/2026/mini/mini1.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
 
 
 
@@ -99,12 +99,12 @@ if (!hook()) {
 
 `0x1469f50` address represents raknetPeer vtable whose methods closely resembles this [raknetpeerinterface.h](https://github.com/facebookarchive/RakNet/blob/1a169895a900c9fc4841c556e16514182b75faf8/Source/RakPeerInterface.h) file, but it also lists additional methods other. 
 
-![](/assets/2026/mini/min3.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
+![](../assets/2026/mini/mini3.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
 
 Since there are lot of branch instructions ghidra struggled with disassembly so I used online arm [diassembler](https://ret.futo.tech/arm64/) to view instruction code instead of ghidra's disassembler. I analyzed each and every branch instruction since the code indicates multiple branch, I found branch to  `_ZN11ServerState17ClientPeerMessageEPN6RakNet6PacketE` from the address. I hooked this but I didn't received any calls in this methods. Maybe because I was trying to be host in local game, this method is not used. So I tried next branch and it points to `_ZN11ServerState22ClientBroadcastMessageEPN6RakNet6PacketEbb`at address **0x4e9a30**. Adding 0x100000 [ghidra base address]to this address, we can inspect its function in ghidra.
 
 
-![](/assets/2026/mini/min4.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
+![](../assets/2026/mini/mini4.png){:style="display:block; margin-left:auto; margin-right:auto;width=50%;height=70%"}
 
 
 I made similar script to debug the arguments passed here. This method already has call to `            _ZN11ServerState14ProcessMessageEPN6RakNet6PacketEP11ClientEntryb(param_1,param_2,lVar4,0)` which looks like base class for processing server message. Modified above script for 
